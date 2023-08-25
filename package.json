@@ -35,8 +35,8 @@
     "@actions/core": "^1.10.0"
   },
   "devDependencies": {
-    "@benny123tw/eslint-config-ts": "^0.0.4",
-    "@benny123tw/prettier-config": "^0.0.4",
+    "@benny123tw/eslint-config-ts": "^0.0.5",
+    "@benny123tw/prettier-config": "^0.0.5",
     "@types/node": "^20.5.6",
     "@vercel/ncc": "^0.36.1",
     "eslint": "^8.47.0",
