@@ -1,18 +1,59 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: changelogen
+description: Github action for releasing version
+author: Benny Yen
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
+  dry:
+    description: Dry run
+    required: false
+    default: false
+  name:
+    description: Name of the release
+    required: false
+  prerelease:
+    description: Mark the release as prerelease
+    required: false
+    default: false
+  draft:
+    description: Mark the release as draft
+    required: false
+    default: false
+  capitalize:
+    description: Capitalize commit messages
+    required: false
+    default: true
+  contributors:
+    description: Whether to include contributors in release notes.
+    required: false
+    default: true
+  group:
+    description: Nest commit messages under their scopes
+    required: false
+    default: true
+  emoji:
+    description: Use emojis in section titles
+    required: false
+    default: true
+  clean:
+    description: Determine if the working directory is clean and if it is not clean, exit.
+    required: false
+    default: false
+  from:
+    description: Start commit reference. When not provided, latest git tag will be used as default.
+    required: false
+  to:
+    description: End commit reference. When not provided, latest commit in HEAD will be used as default.
+    required: false
+  version:
+    description: Release as specific version.
+    required: false
+  token:
+    description: Github token
+    required: false
+  directory:
+    description: Path to git repository. When not provided, current working directory will be used as as default.
+    required: false
 
 runs:
   using: node20

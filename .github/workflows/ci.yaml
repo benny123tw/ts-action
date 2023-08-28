@@ -59,7 +59,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 1000
+          dry: true
 
       - name: Print Output
         id: output

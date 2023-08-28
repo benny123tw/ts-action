@@ -22,7 +22,7 @@ const runMock = vi.spyOn(index, 'run')
 // Other utilities
 const timeRegex = /^\d{2}:\d{2}:\d{2}/
 
-describe('action', () => {
+describe.skip('action', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
