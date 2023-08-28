@@ -3,10 +3,12 @@ import consola from 'consola'
 import * as core from '@actions/core'
 import type { ResolvedChangelogConfig } from 'changelogen'
 import { generateMarkDown, getCurrentGitStatus, getGitDiff, parseCommits } from 'changelogen'
-import type { ChangelogOptions, ChangelogenConfig } from './types.js'
-import { githubRelease } from './github.js'
+import { bold, yellow } from 'colorette'
+import type { ChangelogenConfig, ResolvedChangelogOptions } from './types.js'
+import { githubRelease, hasTagOnGitHub } from './github.js'
 
-export default async function defaultMain(config: ChangelogOptions) {
+export default async function defaultMain(config: ResolvedChangelogOptions) {
+  consola.log(config)
   if (config.clean) {
     const dirty = await getCurrentGitStatus()
     if (dirty) {
@@ -61,7 +63,7 @@ export default async function defaultMain(config: ChangelogOptions) {
   if (config.dry) {
     core.debug('Dry run. Skip releasing')
     consola.log(`\n\n${markdown}\n\n`)
-    process.exit(1)
+    return
   }
 
   // Update changelog file (only when bumping or releasing or when --output is specified as a file)
@@ -108,6 +110,16 @@ export default async function defaultMain(config: ChangelogOptions) {
   // if (args.push === true) {
   //   await execa('git', ['push', '--follow-tags'], { cwd })
   // }
+
+  if (!(await hasTagOnGitHub(config.to, config as any))) {
+    console.error(
+      yellow(
+        `Current ref "${bold(config.to)}" is not available as tags on GitHub. Release skipped.`,
+      ),
+    )
+    process.exit(1)
+  }
+
   if (config.repo?.provider === 'github') {
     await githubRelease(config as ResolvedChangelogConfig, {
       version: config.newVersion as string,

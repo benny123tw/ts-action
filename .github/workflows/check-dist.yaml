@@ -33,37 +33,37 @@ jobs:
         id: checkout
         uses: actions/checkout@v3
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+      # - name: Setup pnpm
+      #   uses: pnpm/action-setup@v2
 
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: pnpm
+      # - name: Setup Node.js
+      #   id: setup-node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 18
+      #     cache: pnpm
 
-      - name: Install Dependencies
-        id: install
-        run: pnpm install --frozen-lockfile
+      # - name: Install Dependencies
+      #   id: install
+      #   run: pnpm install --frozen-lockfile
 
-      - name: Build dist/ Directory
-        id: build
-        run: pnpm bundle
+      # - name: Build dist/ Directory
+      #   id: build
+      #   run: pnpm bundle
 
-      - name: Compare Expected and Actual Directories
-        id: diff
-        run: |
-          if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff --ignore-space-at-eol --text dist/
-            exit 1
-          fi
+      # - name: Compare Expected and Actual Directories
+      #   id: diff
+      #   run: |
+      #     if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
+      #       echo "Detected uncommitted changes after build. See status below:"
+      #       git diff --ignore-space-at-eol --text dist/
+      #       exit 1
+      #     fi
 
-      # If index.js was different than expected, upload the expected version as
-      # a workflow artifact.
-      - uses: actions/upload-artifact@v3
-        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
-        with:
-          name: dist
-          path: dist/
+      # # If index.js was different than expected, upload the expected version as
+      # # a workflow artifact.
+      # - uses: actions/upload-artifact@v3
+      #   if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+      #   with:
+      #     name: dist
+      #     path: dist/

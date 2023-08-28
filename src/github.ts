@@ -2,6 +2,8 @@ import process from 'node:process'
 import { consola } from 'consola'
 import { type ResolvedChangelogConfig, resolveGithubToken, syncGithubRelease } from 'changelogen'
 import { cyan } from 'colorette'
+import { $fetch } from 'ofetch'
+import type { ChangelogOptions } from './types.js'
 
 export async function githubRelease(
   config: ResolvedChangelogConfig,
@@ -20,5 +22,24 @@ export async function githubRelease(
     consola.error(result.url)
   } else {
     consola.success(`Synced ${cyan(`v${release.version}`)} to Github releases!`)
+  }
+}
+
+function getHeaders(options: ChangelogOptions) {
+  return {
+    accept: 'application/vnd.github.v3+json',
+    authorization: `token ${options.tokens?.github}`,
+  }
+}
+
+export async function hasTagOnGitHub(tag: string, options: ChangelogOptions) {
+  try {
+    await $fetch(`https://api.github.com/repos/${options.repo?.repo}/git/ref/tags/${tag}`, {
+      headers: getHeaders(options),
+    })
+    return true
+  } catch (e) {
+    consola.error(e)
+    return false
   }
 }

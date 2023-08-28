@@ -25022,7 +25022,7 @@ const fetch = globalThis.fetch || createNodeFetch();
 const Headers = globalThis.Headers || dist/* Headers */.PM;
 const AbortController = globalThis.AbortController || dist/* AbortController */.HS;
 const ofetch = createFetch({ fetch, Headers, AbortController });
-const $fetch = ofetch;
+const node_$fetch = ofetch;
 
 
 
@@ -25175,7 +25175,7 @@ const gitmojis = {
   ":thread:": "\u{1F9F5}",
   ":safety_vest:": "\u{1F9BA}"
 };
-function convert(content, withSpace) {
+function dist_convert(content, withSpace) {
   const re = new RegExp(Object.keys(gitmojis).join("|"), "gi");
   return content.replace(re, function(matched) {
     switch (withSpace) {
@@ -25213,7 +25213,7 @@ var pkg_types_dist = __nccwpck_require__(3774);
 
 
 async function execCommand(cmd, args, options) {
-  const { execa } = await __nccwpck_require__.e(/* import() */ 717).then(__nccwpck_require__.bind(__nccwpck_require__, 3717));
+  const { execa } = await Promise.all(/* import() */[__nccwpck_require__.e(813), __nccwpck_require__.e(762)]).then(__nccwpck_require__.bind(__nccwpck_require__, 4762));
   const res = await execa(cmd, args, options);
   return res.stdout;
 }
@@ -25242,7 +25242,7 @@ async function getGitRemoteURL(cwd, remote = "origin") {
 async function getCurrentGitStatus() {
   return await execCommand("git", ["status", "--porcelain"]);
 }
-async function getGitDiff(from, to = "HEAD") {
+async function changelogen_b98c84ee_getGitDiff(from, to = "HEAD") {
   const r = await execCommand("git", [
     "--no-pager",
     "log",
@@ -25263,13 +25263,13 @@ async function getGitDiff(from, to = "HEAD") {
   });
 }
 function parseCommits(commits, config) {
-  return commits.map((commit) => parseGitCommit(commit, config)).filter(Boolean);
+  return commits.map((commit) => changelogen_b98c84ee_parseGitCommit(commit, config)).filter(Boolean);
 }
 const ConventionalCommitRegex = /(?<type>[a-z]+)(\((?<scope>.+)\))?(?<breaking>!)?: (?<description>.+)/i;
 const CoAuthoredByRegex = /co-authored-by:\s*(?<name>.+)(<(?<email>.+)>)/gim;
 const PullRequestRE = /\([ a-z]*(#\d+)\s*\)/gm;
 const IssueRE = /(#\d+)/gm;
-function parseGitCommit(commit, config) {
+function changelogen_b98c84ee_parseGitCommit(commit, config) {
   const match = commit.message.match(ConventionalCommitRegex);
   if (!match) {
     return null;
@@ -25393,7 +25393,7 @@ async function resolveGithubToken(config) {
   }
 }
 async function githubFetch(config, url, opts = {}) {
-  return await $fetch(url, {
+  return await node_$fetch(url, {
     ...opts,
     baseURL: config.repo.domain === "github.com" ? "https://api.github.com" : `https://${config.repo.domain}/api/v3`,
     headers: {
@@ -25555,7 +25555,7 @@ async function generateMarkDown(commits, config) {
       })
     );
   }
-  return convert(markdown.join("\n").trim(), true);
+  return dist_convert(markdown.join("\n").trim(), true);
 }
 function parseChangelogMarkdown(contents) {
   const headings = [...contents.matchAll(CHANGELOG_RELEASE_HEAD_RE)];
@@ -25680,73 +25680,476 @@ async function resolveChangelogConfig(config, cwd) {
 
 
 
-;// CONCATENATED MODULE: ./src/config.ts
-
-
-
-function defineConfig(config) {
-    return config;
+;// CONCATENATED MODULE: ./node_modules/.pnpm/kolorist@1.8.0/node_modules/kolorist/dist/esm/index.mjs
+let enabled = true;
+// Support both browser and node environments
+const globalVar = typeof self !== 'undefined'
+    ? self
+    : typeof window !== 'undefined'
+        ? window
+        : typeof global !== 'undefined'
+            ? global
+            : {};
+/**
+ * Detect how much colors the current terminal supports
+ */
+let supportLevel = 0 /* none */;
+if (globalVar.process && globalVar.process.env && globalVar.process.stdout) {
+    const { FORCE_COLOR, NODE_DISABLE_COLORS, NO_COLOR, TERM, COLORTERM } = globalVar.process.env;
+    if (NODE_DISABLE_COLORS || NO_COLOR || FORCE_COLOR === '0') {
+        enabled = false;
+    }
+    else if (FORCE_COLOR === '1' ||
+        FORCE_COLOR === '2' ||
+        FORCE_COLOR === '3') {
+        enabled = true;
+    }
+    else if (TERM === 'dumb') {
+        enabled = false;
+    }
+    else if ('CI' in globalVar.process.env &&
+        [
+            'TRAVIS',
+            'CIRCLECI',
+            'APPVEYOR',
+            'GITLAB_CI',
+            'GITHUB_ACTIONS',
+            'BUILDKITE',
+            'DRONE',
+        ].some(vendor => vendor in globalVar.process.env)) {
+        enabled = true;
+    }
+    else {
+        enabled = process.stdout.isTTY;
+    }
+    if (enabled) {
+        // Windows supports 24bit True Colors since Windows 10 revision #14931,
+        // see https://devblogs.microsoft.com/commandline/24-bit-color-in-the-windows-console/
+        if (process.platform === 'win32') {
+            supportLevel = 3 /* trueColor */;
+        }
+        else {
+            if (COLORTERM && (COLORTERM === 'truecolor' || COLORTERM === '24bit')) {
+                supportLevel = 3 /* trueColor */;
+            }
+            else if (TERM && (TERM.endsWith('-256color') || TERM.endsWith('256'))) {
+                supportLevel = 2 /* ansi256 */;
+            }
+            else {
+                supportLevel = 1 /* ansi */;
+            }
+        }
+    }
 }
-const defaultConfig = {
-    capitalize: true,
-    contributors: true,
-    cwd: external_node_process_default().cwd(),
-    draft: false,
-    dry: false,
-    emoji: true,
-    from: '',
-    group: true,
-    name: '',
-    newVersion: '',
-    output: '',
-    prerelease: false,
-    token: '',
-    clean: false,
+let options = {
+    enabled,
+    supportLevel,
 };
-async function resolveConfig(options) {
-    core.debug('Resolve config from changelogen');
-    const inputs = core.isDebug() ? await getInputVariablesDebugMode() : getInputVariables();
-    const cwd = inputs.cwd || external_node_process_default().cwd();
-    const config = await loadChangelogConfig(cwd, Object.assign(inputs, options));
-    return config;
-}
-function getInputVariables() {
-    core.debug('Get input from yaml');
-    const name = core.getInput('name');
-    const from = core.getInput('from');
-    const cwd = core.getInput('directory') || external_node_process_default().cwd();
-    const to = core.getInput('to');
-    const version = core.getInput('version');
-    const emoji = core.getBooleanInput('emoji');
-    const contributors = core.getBooleanInput('contributors');
-    const prerelease = core.getBooleanInput('prerelease');
-    const draft = core.getBooleanInput('draft');
-    const group = core.getBooleanInput('group');
-    const capitalize = core.getBooleanInput('capitalize');
-    const token = core.getInput('token');
-    return {
-        name,
-        from,
-        cwd,
-        to,
-        version,
-        emoji,
-        contributors,
-        prerelease,
-        draft,
-        group,
-        capitalize,
-        token,
+function kolorist(start, end, level = 1 /* ansi */) {
+    const open = `\x1b[${start}m`;
+    const close = `\x1b[${end}m`;
+    const regex = new RegExp(`\\x1b\\[${end}m`, 'g');
+    return (str) => {
+        return options.enabled && options.supportLevel >= level
+            ? open + ('' + str).replace(regex, open) + close
+            : '' + str;
     };
 }
-async function getInputVariablesDebugMode() {
-    const { loadConfig } = await Promise.resolve(/* import() */).then(__nccwpck_require__.bind(__nccwpck_require__, 3145));
-    const config = await loadConfig({
-        name: 'chanction',
-        defaultConfig,
-    }).then((r) => r.config || defaultConfig);
-    return config;
+// Lower colors into 256 color space
+// Taken from https://github.com/Qix-/color-convert/blob/3f0e0d4e92e235796ccb17f6e85c72094a651f49/conversions.js
+// which is MIT licensed and copyright by Heather Arthur and Josh Junon
+function rgbToAnsi256(r, g, b) {
+    // We use the extended greyscale palette here, with the exception of
+    // black and white. normal palette only has 4 greyscale shades.
+    if (r >> 4 === g >> 4 && g >> 4 === b >> 4) {
+        if (r < 8) {
+            return 16;
+        }
+        if (r > 248) {
+            return 231;
+        }
+        return Math.round(((r - 8) / 247) * 24) + 232;
+    }
+    const ansi = 16 +
+        36 * Math.round((r / 255) * 5) +
+        6 * Math.round((g / 255) * 5) +
+        Math.round((b / 255) * 5);
+    return ansi;
 }
+function stripColors(str) {
+    return ('' + str)
+        .replace(/\x1b\[[0-9;]+m/g, '')
+        .replace(/\x1b\]8;;.*?\x07(.*?)\x1b\]8;;\x07/g, (_, group) => group);
+}
+// modifiers
+const esm_reset = kolorist(0, 0);
+const bold = kolorist(1, 22);
+const dim = kolorist(2, 22);
+const italic = kolorist(3, 23);
+const underline = kolorist(4, 24);
+const inverse = kolorist(7, 27);
+const esm_hidden = kolorist(8, 28);
+const strikethrough = kolorist(9, 29);
+// colors
+const black = kolorist(30, 39);
+const red = kolorist(31, 39);
+const esm_green = kolorist(32, 39);
+const yellow = kolorist(33, 39);
+const blue = kolorist(34, 39);
+const magenta = kolorist(35, 39);
+const esm_cyan = kolorist(36, 39);
+const white = kolorist(97, 39);
+const gray = kolorist(90, 39);
+const lightGray = kolorist(37, 39);
+const lightRed = kolorist(91, 39);
+const lightGreen = kolorist(92, 39);
+const lightYellow = kolorist(93, 39);
+const lightBlue = kolorist(94, 39);
+const lightMagenta = kolorist(95, 39);
+const lightCyan = kolorist(96, 39);
+// background colors
+const bgBlack = kolorist(40, 49);
+const bgRed = kolorist(41, 49);
+const bgGreen = kolorist(42, 49);
+const bgYellow = kolorist(43, 49);
+const bgBlue = kolorist(44, 49);
+const bgMagenta = kolorist(45, 49);
+const bgCyan = kolorist(46, 49);
+const bgWhite = kolorist(107, 49);
+const bgGray = kolorist(100, 49);
+const bgLightRed = kolorist(101, 49);
+const bgLightGreen = kolorist(102, 49);
+const bgLightYellow = kolorist(103, 49);
+const bgLightBlue = kolorist(104, 49);
+const bgLightMagenta = kolorist(105, 49);
+const bgLightCyan = kolorist(106, 49);
+const bgLightGray = kolorist(47, 49);
+// 256 support
+const ansi256 = (n) => kolorist('38;5;' + n, 0, 2 /* ansi256 */);
+const ansi256Bg = (n) => kolorist('48;5;' + n, 0, 2 /* ansi256 */);
+// TrueColor 24bit support
+const trueColor = (r, g, b) => {
+    return options.supportLevel === 2 /* ansi256 */
+        ? ansi256(rgbToAnsi256(r, g, b))
+        : kolorist(`38;2;${r};${g};${b}`, 0, 3 /* trueColor */);
+};
+const trueColorBg = (r, g, b) => {
+    return options.supportLevel === 2 /* ansi256 */
+        ? ansi256Bg(rgbToAnsi256(r, g, b))
+        : kolorist(`48;2;${r};${g};${b}`, 0, 3 /* trueColor */);
+};
+// Links
+const OSC = '\u001B]';
+const BEL = '\u0007';
+const SEP = ';';
+function esm_link(text, url) {
+    return options.enabled
+        ? OSC + '8' + SEP + SEP + url + BEL + text + OSC + '8' + SEP + SEP + BEL
+        : `${text} (\u200B${url}\u200B)`;
+}
+//# sourceMappingURL=index.js.map
+;// CONCATENATED MODULE: ./node_modules/.pnpm/changelogithub@0.12.12/node_modules/changelogithub/dist/shared/changelogithub.f8b5325a.mjs
+
+
+
+
+
+
+async function sendRelease(options, content) {
+  const headers = getHeaders(options);
+  let url = `https://api.github.com/repos/${options.github}/releases`;
+  let method = "POST";
+  try {
+    const exists = await $fetch(`https://api.github.com/repos/${options.github}/releases/tags/${options.to}`, {
+      headers
+    });
+    if (exists.url) {
+      url = exists.url;
+      method = "PATCH";
+    }
+  } catch (e) {
+  }
+  const body = {
+    body: content,
+    draft: options.draft || false,
+    name: options.name || options.to,
+    prerelease: options.prerelease,
+    tag_name: options.to
+  };
+  console.log(cyan(method === "POST" ? "Creating release notes..." : "Updating release notes..."));
+  const res = await $fetch(url, {
+    method,
+    body: JSON.stringify(body),
+    headers
+  });
+  console.log(green(`Released on ${res.html_url}`));
+}
+function getHeaders(options) {
+  return {
+    accept: "application/vnd.github.v3+json",
+    authorization: `token ${options.token}`
+  };
+}
+async function resolveAuthorInfo(options, info) {
+  if (info.login)
+    return info;
+  if (!options.token)
+    return info;
+  try {
+    const data = await $fetch(`https://api.github.com/search/users?q=${encodeURIComponent(info.email)}`, {
+      headers: getHeaders(options)
+    });
+    info.login = data.items[0].login;
+  } catch {
+  }
+  if (info.login)
+    return info;
+  if (info.commits.length) {
+    try {
+      const data = await $fetch(`https://api.github.com/repos/${options.github}/commits/${info.commits[0]}`, {
+        headers: getHeaders(options)
+      });
+      info.login = data.author.login;
+    } catch (e) {
+    }
+  }
+  return info;
+}
+async function resolveAuthors(commits, options) {
+  const map = /* @__PURE__ */ new Map();
+  commits.forEach((commit) => {
+    commit.resolvedAuthors = commit.authors.map((a, idx) => {
+      if (!a.email || !a.name)
+        return null;
+      if (!map.has(a.email)) {
+        map.set(a.email, {
+          commits: [],
+          name: a.name,
+          email: a.email
+        });
+      }
+      const info = map.get(a.email);
+      if (idx === 0)
+        info.commits.push(commit.shortHash);
+      return info;
+    }).filter(notNullish);
+  });
+  const authors = Array.from(map.values());
+  const resolved = await Promise.all(authors.map((info) => resolveAuthorInfo(options, info)));
+  const loginSet = /* @__PURE__ */ new Set();
+  const nameSet = /* @__PURE__ */ new Set();
+  return resolved.sort((a, b) => (a.login || a.name).localeCompare(b.login || b.name)).filter((i) => {
+    if (i.login && loginSet.has(i.login))
+      return false;
+    if (i.login) {
+      loginSet.add(i.login);
+    } else {
+      if (nameSet.has(i.name))
+        return false;
+      nameSet.add(i.name);
+    }
+    return true;
+  });
+}
+async function hasTagOnGitHub(tag, options) {
+  try {
+    await $fetch(`https://api.github.com/repos/${options.github}/git/ref/tags/${tag}`, {
+      headers: getHeaders(options)
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function getGitHubRepo() {
+  const url = await changelogithub_f8b5325a_execCommand("git", ["config", "--get", "remote.origin.url"]);
+  const match = url.match(/github\.com[\/:]([\w\d._-]+?)\/([\w\d._-]+?)(\.git)?$/i);
+  if (!match)
+    throw new Error(`Can not parse GitHub repo from url ${url}`);
+  return `${match[1]}/${match[2]}`;
+}
+async function changelogithub_f8b5325a_getCurrentGitBranch() {
+  return await changelogithub_f8b5325a_execCommand("git", ["tag", "--points-at", "HEAD"]) || await changelogithub_f8b5325a_execCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+}
+async function isRepoShallow() {
+  return (await changelogithub_f8b5325a_execCommand("git", ["rev-parse", "--is-shallow-repository"])).trim() === "true";
+}
+async function changelogithub_f8b5325a_getLastGitTag(delta = 0) {
+  const tags = await changelogithub_f8b5325a_execCommand("git", ["--no-pager", "tag", "-l", "--sort=creatordate"]).then((r) => r.split("\n"));
+  return tags[tags.length + delta - 1];
+}
+async function isRefGitTag(to) {
+  const { execa } = await Promise.all(/* import() */[__nccwpck_require__.e(813), __nccwpck_require__.e(914)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3914));
+  try {
+    await execa("git", ["show-ref", "--verify", `refs/tags/${to}`], { reject: true });
+  } catch {
+    return false;
+  }
+}
+async function getFirstGitCommit() {
+  return await changelogithub_f8b5325a_execCommand("git", ["rev-list", "--max-parents=0", "HEAD"]);
+}
+function isPrerelease(version) {
+  return !/^[^.]*[\d.]+$/.test(version);
+}
+async function changelogithub_f8b5325a_execCommand(cmd, args) {
+  const { execa } = await Promise.all(/* import() */[__nccwpck_require__.e(813), __nccwpck_require__.e(914)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3914));
+  const res = await execa(cmd, args);
+  return res.stdout.trim();
+}
+
+const emojisRE = /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g;
+function changelogithub_f8b5325a_formatReferences(references, github, type) {
+  const refs = references.filter((i) => {
+    if (type === "issues")
+      return i.type === "issue" || i.type === "pull-request";
+    return i.type === "hash";
+  }).map((ref) => {
+    if (!github)
+      return ref.value;
+    if (ref.type === "pull-request" || ref.type === "issue")
+      return `https://github.com/${github}/issues/${ref.value.slice(1)}`;
+    return `[<samp>(${ref.value.slice(0, 5)})</samp>](https://github.com/${github}/commit/${ref.value})`;
+  });
+  const referencesString = join(refs).trim();
+  if (type === "issues")
+    return referencesString && `in ${referencesString}`;
+  return referencesString;
+}
+function formatLine(commit, options) {
+  const prRefs = changelogithub_f8b5325a_formatReferences(commit.references, options.github, "issues");
+  const hashRefs = changelogithub_f8b5325a_formatReferences(commit.references, options.github, "hash");
+  let authors = join([...new Set(commit.resolvedAuthors?.map((i) => i.login ? `@${i.login}` : `**${i.name}**`))])?.trim();
+  if (authors)
+    authors = `by ${authors}`;
+  let refs = [authors, prRefs, hashRefs].filter((i) => i?.trim()).join(" ");
+  if (refs)
+    refs = `&nbsp;-&nbsp; ${refs}`;
+  const description = options.capitalize ? capitalize(commit.description) : commit.description;
+  return [description, refs].filter((i) => i?.trim()).join(" ");
+}
+function formatTitle(name, options) {
+  if (!options.emoji)
+    name = name.replace(emojisRE, "");
+  return `### &nbsp;&nbsp;&nbsp;${name.trim()}`;
+}
+function formatSection(commits, sectionName, options) {
+  if (!commits.length)
+    return [];
+  const lines = [
+    "",
+    formatTitle(sectionName, options),
+    ""
+  ];
+  const scopes = changelogithub_f8b5325a_groupBy(commits, "scope");
+  let useScopeGroup = options.group;
+  if (!Object.entries(scopes).some(([k, v]) => k && v.length > 1))
+    useScopeGroup = false;
+  Object.keys(scopes).sort().forEach((scope) => {
+    let padding = "";
+    let prefix = "";
+    const scopeText = `**${options.scopeMap[scope] || scope}**`;
+    if (scope && (useScopeGroup === true || useScopeGroup === "multiple" && scopes[scope].length > 1)) {
+      lines.push(`- ${scopeText}:`);
+      padding = "  ";
+    } else if (scope) {
+      prefix = `${scopeText}: `;
+    }
+    lines.push(
+      ...scopes[scope].reverse().map((commit) => `${padding}- ${prefix}${formatLine(commit, options)}`)
+    );
+  });
+  return lines;
+}
+function generateMarkdown(commits, options) {
+  const lines = [];
+  const [breaking, changes] = partition(commits, (c) => c.isBreaking);
+  const group = changelogithub_f8b5325a_groupBy(changes, "type");
+  lines.push(
+    ...formatSection(breaking, options.titles.breakingChanges, options)
+  );
+  for (const type of Object.keys(options.types)) {
+    const items = group[type] || [];
+    lines.push(
+      ...formatSection(items, options.types[type].title, options)
+    );
+  }
+  if (!lines.length)
+    lines.push("*No significant changes*");
+  const url = `https://github.com/${options.github}/compare/${options.from}...${options.to}`;
+  lines.push("", `##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](${url})`);
+  return convert(lines.join("\n").trim(), true);
+}
+function changelogithub_f8b5325a_groupBy(items, key, groups = {}) {
+  for (const item of items) {
+    const v = item[key];
+    groups[v] = groups[v] || [];
+    groups[v].push(item);
+  }
+  return groups;
+}
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+function join(array, glue = ", ", finalGlue = " and ") {
+  if (!array || array.length === 0)
+    return "";
+  if (array.length === 1)
+    return array[0];
+  if (array.length === 2)
+    return array.join(finalGlue);
+  return `${array.slice(0, -1).join(glue)}${finalGlue}${array.slice(-1)}`;
+}
+
+function defineConfig(config) {
+  return config;
+}
+const defaultConfig = {
+  scopeMap: {},
+  types: {
+    feat: { title: "\u{1F680} Features" },
+    fix: { title: "\u{1F41E} Bug Fixes" },
+    perf: { title: "\u{1F3CE} Performance" }
+  },
+  titles: {
+    breakingChanges: "\u{1F6A8} Breaking Changes"
+  },
+  contributors: true,
+  capitalize: true,
+  group: true
+};
+async function resolveConfig(options) {
+  const { loadConfig } = await Promise.resolve(/* import() */).then(__nccwpck_require__.bind(__nccwpck_require__, 3145));
+  const config = await loadConfig({
+    name: "changelogithub",
+    defaults: defaultConfig,
+    overrides: options
+  }).then((r) => r.config || defaultConfig);
+  config.from = config.from || await changelogithub_f8b5325a_getLastGitTag();
+  config.to = config.to || await changelogithub_f8b5325a_getCurrentGitBranch();
+  config.github = config.github || await getGitHubRepo();
+  config.prerelease = config.prerelease ?? isPrerelease(config.to);
+  if (config.to === config.from)
+    config.from = await changelogithub_f8b5325a_getLastGitTag(-1) || await getFirstGitCommit();
+  return config;
+}
+
+function changelogithub_f8b5325a_parseCommits(commits, config) {
+  return commits.map((commit) => parseGitCommit(commit, config)).filter(notNullish);
+}
+
+async function generate(options) {
+  const resolved = await resolveConfig(options);
+  const rawCommits = await getGitDiff(resolved.from, resolved.to);
+  const commits = changelogithub_f8b5325a_parseCommits(rawCommits, resolved);
+  if (resolved.contributors)
+    await resolveAuthors(commits, resolved);
+  const md = generateMarkdown(commits, resolved);
+  return { config: resolved, md, commits };
+}
+
+
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/consola@3.2.3/node_modules/consola/dist/shared/consola.36c0034f.mjs
 var consola_36c0034f = __nccwpck_require__(5733);
@@ -25769,6 +26172,84 @@ var external_node_util_ = __nccwpck_require__(7261);
 
 
 
+
+;// CONCATENATED MODULE: ./src/config.ts
+
+
+
+
+
+function config_defineConfig(config) {
+    return config;
+}
+const config_defaultConfig = {
+    capitalize: true,
+    contributors: true,
+    cwd: external_node_process_default().cwd(),
+    draft: false,
+    dry: false,
+    emoji: true,
+    from: '',
+    group: true,
+    name: '',
+    newVersion: '',
+    output: '',
+    prerelease: false,
+    token: '',
+    clean: false,
+};
+async function config_resolveConfig(options) {
+    core.debug('Resolve config from changelogen');
+    const inputs = core.isDebug() ? await getInputVariablesDebugMode() : getInputVariables();
+    const cwd = inputs.cwd || external_node_process_default().cwd();
+    const config = await loadChangelogConfig(cwd, Object.assign(inputs, options));
+    if (config.to === config.from)
+        config.from = (await changelogithub_f8b5325a_getLastGitTag(-1)) || (await getFirstGitCommit());
+    if (!config.newVersion) {
+        config.newVersion = /v\d+\.\d+\.\d+/.test(config.to) ? config.to.slice(1) : config.to;
+    }
+    consola_36c0034f.a.box(`${config.from}...${config.to}`);
+    return config;
+}
+function getInputVariables() {
+    core.debug('Get input from yaml');
+    const name = core.getInput('name');
+    const from = core.getInput('from');
+    const cwd = core.getInput('directory') || external_node_process_default().cwd();
+    const to = core.getInput('to');
+    const newVersion = core.getInput('version');
+    const emoji = core.getBooleanInput('emoji');
+    const contributors = core.getBooleanInput('contributors');
+    const prerelease = core.getBooleanInput('prerelease');
+    const draft = core.getBooleanInput('draft');
+    const group = core.getBooleanInput('group');
+    const capitalize = core.getBooleanInput('capitalize');
+    const token = core.getInput('token');
+    const dry = core.getBooleanInput('dry');
+    return {
+        dry,
+        name,
+        from,
+        cwd,
+        to,
+        newVersion,
+        emoji,
+        contributors,
+        prerelease,
+        draft,
+        group,
+        capitalize,
+        token,
+    };
+}
+async function getInputVariablesDebugMode() {
+    const { loadConfig } = await Promise.resolve(/* import() */).then(__nccwpck_require__.bind(__nccwpck_require__, 3145));
+    const config = await loadConfig({
+        name: 'chanction',
+        defaultConfig: config_defaultConfig,
+    }).then((r) => r.config || config_defaultConfig);
+    return config;
+}
 
 // EXTERNAL MODULE: external "tty"
 var external_tty_ = __nccwpck_require__(6224);
@@ -25883,30 +26364,30 @@ const createColors = ({ useColor = isColorSupported } = {}) =>
 
 const {
   reset: colorette_reset,
-  bold,
-  dim,
-  italic,
-  underline,
-  inverse,
+  bold: colorette_bold,
+  dim: colorette_dim,
+  italic: colorette_italic,
+  underline: colorette_underline,
+  inverse: colorette_inverse,
   hidden: colorette_hidden,
-  strikethrough,
-  black,
-  red,
-  green,
-  yellow,
-  blue,
-  magenta,
-  cyan,
-  white,
-  gray,
-  bgBlack,
-  bgRed,
-  bgGreen,
-  bgYellow,
-  bgBlue,
-  bgMagenta,
-  bgCyan,
-  bgWhite,
+  strikethrough: colorette_strikethrough,
+  black: colorette_black,
+  red: colorette_red,
+  green: colorette_green,
+  yellow: colorette_yellow,
+  blue: colorette_blue,
+  magenta: colorette_magenta,
+  cyan: colorette_cyan,
+  white: colorette_white,
+  gray: colorette_gray,
+  bgBlack: colorette_bgBlack,
+  bgRed: colorette_bgRed,
+  bgGreen: colorette_bgGreen,
+  bgYellow: colorette_bgYellow,
+  bgBlue: colorette_bgBlue,
+  bgMagenta: colorette_bgMagenta,
+  bgCyan: colorette_bgCyan,
+  bgWhite: colorette_bgWhite,
   blackBright,
   redBright,
   greenBright,
@@ -25930,6 +26411,7 @@ const {
 
 
 
+
 async function githubRelease(config, release) {
     if (!config.tokens.github) {
         config.tokens.github = await resolveGithubToken(config).catch(() => undefined);
@@ -25944,7 +26426,25 @@ async function githubRelease(config, release) {
         consola_36c0034f.a.error(result.url);
     }
     else {
-        consola_36c0034f.a.success(`Synced ${cyan(`v${release.version}`)} to Github releases!`);
+        consola_36c0034f.a.success(`Synced ${colorette_cyan(`v${release.version}`)} to Github releases!`);
+    }
+}
+function github_getHeaders(options) {
+    return {
+        accept: 'application/vnd.github.v3+json',
+        authorization: `token ${options.tokens?.github}`,
+    };
+}
+async function github_hasTagOnGitHub(tag, options) {
+    try {
+        await node_$fetch(`https://api.github.com/repos/${options.repo?.repo}/git/ref/tags/${tag}`, {
+            headers: github_getHeaders(options),
+        });
+        return true;
+    }
+    catch (e) {
+        consola_36c0034f.a.error(e);
+        return false;
     }
 }
 
@@ -25954,7 +26454,9 @@ async function githubRelease(config, release) {
 
 
 
+
 async function defaultMain(config) {
+    consola_36c0034f.a.log(config);
     if (config.clean) {
         const dirty = await getCurrentGitStatus();
         if (dirty) {
@@ -25964,7 +26466,7 @@ async function defaultMain(config) {
     }
     const logger = consola_36c0034f.a.create({ stdout: (external_node_process_default()).stderr });
     logger.info(`Generating changelog for ${config.from || ''}...${config.to}`);
-    const rawCommits = await getGitDiff(config.from, config.to);
+    const rawCommits = await changelogen_b98c84ee_getGitDiff(config.from, config.to);
     // Parse commits as conventional commits
     const commits = parseCommits(rawCommits, config).filter((c) => config.types?.[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking));
     // Shortcut for canary releases
@@ -25999,7 +26501,7 @@ async function defaultMain(config) {
     if (config.dry) {
         core.debug('Dry run. Skip releasing');
         consola_36c0034f.a.log(`\n\n${markdown}\n\n`);
-        external_node_process_default().exit(1);
+        return;
     }
     // Update changelog file (only when bumping or releasing or when --output is specified as a file)
     // if (typeof config.output === 'string' && (args.output || !displayOnly)) {
@@ -26041,6 +26543,10 @@ async function defaultMain(config) {
     // if (args.push === true) {
     //   await execa('git', ['push', '--follow-tags'], { cwd })
     // }
+    if (!(await github_hasTagOnGitHub(config.to, config))) {
+        console.error(colorette_yellow(`Current ref "${colorette_bold(config.to)}" is not available as tags on GitHub. Release skipped.`));
+        external_node_process_default().exit(1);
+    }
     if (config.repo?.provider === 'github') {
         await githubRelease(config, {
             version: config.newVersion,
@@ -26068,7 +26574,7 @@ async function defaultMain(config) {
 async function run() {
     try {
         // Get from input
-        const config = await resolveConfig();
+        const config = await config_resolveConfig();
         // Load config, parse commit, generate markdown
         defaultMain(config);
     }

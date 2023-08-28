@@ -67,3 +67,4 @@ export interface ChangelogOptions extends Partial<Omit<ChangelogenConfig, 'repo'
    */
   emoji?: boolean
 }
+export type ResolvedChangelogOptions = Required<ChangelogOptions>

@@ -60,6 +60,8 @@ jobs:
         uses: ./
         with:
           dry: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Print Output
         id: output
