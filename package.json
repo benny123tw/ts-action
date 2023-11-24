@@ -44,7 +44,7 @@
   "devDependencies": {
     "@benny123tw/eslint-config-ts": "^0.0.5",
     "@benny123tw/prettier-config": "^0.0.5",
-    "@types/node": "^20.8.2",
+    "@types/node": "^20.10.0",
     "@vercel/ncc": "^0.38.0",
     "bumpp": "^9.2.0",
     "c12": "^1.4.2",
